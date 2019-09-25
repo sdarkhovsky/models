@@ -99,3 +99,12 @@ tutorials/embedding/text8
 tutorials/embedding/questions-words.txt
 
 samples/outreach/blogs/segmentation_blogpost/carvana-image-masking-challenge/
+
+# Ignore pycocotools
+research/pycocotools
+
+# Ignore remote sync
+.remote-sync.json
+
+# Ignore compiled protobuf libraries
+research/object_detection/protos/*.py
