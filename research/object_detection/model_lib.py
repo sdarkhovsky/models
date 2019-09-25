@@ -747,7 +747,8 @@ def create_train_and_eval_specs(train_input_fn,
             name=eval_spec_name,
             input_fn=eval_input_fn,
             steps=None,
-            exporters=exporter))
+            exporters=exporter,
+            throttle_secs=2700))
 
   if eval_on_train_data:
     eval_specs.append(
