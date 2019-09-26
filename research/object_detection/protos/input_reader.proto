@@ -82,6 +82,9 @@ message InputReader {
   // Number of parallel decode ops to apply.
   optional uint32 num_parallel_map_calls = 14 [default = 64, deprecated=true];
 
+  // Number of channels in input image.
+  optional int32 num_channels = 25 [default=3];
+
   // If positive, TfExampleDecoder will try to decode rasters of additional
   // channels from tf.Examples.
   optional int32 num_additional_channels = 18 [default = 0];
