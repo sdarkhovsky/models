@@ -393,7 +393,8 @@ class TfExampleDecoder(data_decoder.DataDecoder):
     tensor_dict = dict(zip(keys, tensors))
     is_crowd = fields.InputDataFields.groundtruth_is_crowd
     tensor_dict[is_crowd] = tf.cast(tensor_dict[is_crowd], dtype=tf.bool)
-    tensor_dict[fields.InputDataFields.image].set_shape([None, None, 3])
+    # TODO(francisco): Set the shape to the correct number of channels
+    tensor_dict[fields.InputDataFields.image].set_shape([None, None, None])
     tensor_dict[fields.InputDataFields.original_image_spatial_shape] = tf.shape(
         tensor_dict[fields.InputDataFields.image])[:2]
 
