@@ -207,8 +207,13 @@ def transform_input_data(tensor_dict,
   return out_tensor_dict
 
 
-def pad_input_data_to_static_shapes(tensor_dict, max_num_boxes, num_classes,
-                                    spatial_image_shape=None):
+def pad_input_data_to_static_shapes(
+    tensor_dict,
+    max_num_boxes,
+    num_classes,
+    num_channels=3,
+    spatial_image_shape=None
+):
   """Pads input tensors to static shapes.
 
   In case num_additional_channels > 0, we assume that the additional channels
@@ -220,6 +225,7 @@ def pad_input_data_to_static_shapes(tensor_dict, max_num_boxes, num_classes,
       padding.
     num_classes: Number of classes in the dataset needed to compute shapes for
       padding.
+    num_channels: Number of channels in input image
     spatial_image_shape: A list of two integers of the form [height, width]
       containing expected spatial shape of the image.
 
@@ -244,7 +250,7 @@ def pad_input_data_to_static_shapes(tensor_dict, max_num_boxes, num_classes,
 
   # We assume that if num_additional_channels > 0, then it has already been
   # concatenated to the base image (but not the ground truth).
-  num_channels = 3
+  num_channels = num_channels
   if fields.InputDataFields.image in tensor_dict:
     num_channels = shape_utils.get_dim_as_int(
         tensor_dict[fields.InputDataFields.image].shape[2])
@@ -559,6 +565,7 @@ def train_input(train_config, train_input_config,
         tensor_dict=transform_data_fn(tensor_dict),
         max_num_boxes=train_input_config.max_number_of_boxes,
         num_classes=config_util.get_number_of_classes(model_config),
+        num_channels=train_input_config.num_channels,
         spatial_image_shape=config_util.get_spatial_image_size(
             image_resizer_config))
     return (_get_features_dict(tensor_dict), _get_labels_dict(tensor_dict))
@@ -668,6 +675,7 @@ def eval_input(eval_config, eval_input_config, model_config,
         tensor_dict=transform_data_fn(tensor_dict),
         max_num_boxes=eval_input_config.max_number_of_boxes,
         num_classes=config_util.get_number_of_classes(model_config),
+        num_channels=train_input_config.num_channels,
         spatial_image_shape=config_util.get_spatial_image_size(
             image_resizer_config))
     return (_get_features_dict(tensor_dict), _get_labels_dict(tensor_dict))
