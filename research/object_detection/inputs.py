@@ -675,7 +675,7 @@ def eval_input(eval_config, eval_input_config, model_config,
         tensor_dict=transform_data_fn(tensor_dict),
         max_num_boxes=eval_input_config.max_number_of_boxes,
         num_classes=config_util.get_number_of_classes(model_config),
-        num_channels=train_input_config.num_channels,
+        num_channels=eval_input_config.num_channels,
         spatial_image_shape=config_util.get_spatial_image_size(
             image_resizer_config))
     return (_get_features_dict(tensor_dict), _get_labels_dict(tensor_dict))
