@@ -41,10 +41,11 @@ flags.DEFINE_integer('sample_1_of_n_eval_on_train_examples', 5, 'Will sample '
                      'one of every n train input examples for evaluation, '
                      'where n is provided. This is only used if '
                      '`eval_training_data` is True.')
-flags.DEFINE_integer("throttle_secs", 900, "Do not re-evaluate unless the last"
-                     "evaluation was started at least this many seconds ago. "
-                     "Of course, evaluation does not occur if no new "
-                     "checkpoints are available, hence, this is the minimum")
+flags.DEFINE_integer(
+    "throttle_secs", 900, "Do not re-evaluate unless the last"
+    "evaluation was started at least this many seconds ago. "
+    "Of course, evaluation does not occur if no new "
+    "checkpoints are available, hence, this is the minimum")
 flags.DEFINE_string(
     'hparams_overrides', None, 'Hyperparameter overrides, '
     'represented as a string containing comma-separated '
@@ -57,6 +58,10 @@ flags.DEFINE_boolean(
     'run_once', False, 'If running in eval-only mode, whether to run just '
     'one round of eval vs running continuously (default).'
 )
+flags.DEFINE_boolean(
+    "load_pretrained", True, "If loading pretrained model, otherwise"
+    "initialize weights randomly"
+)
 FLAGS = flags.FLAGS
 
 
@@ -67,7 +72,8 @@ def main(unused_argv):
 
   train_and_eval_dict = model_lib.create_estimator_and_inputs(
       run_config=config,
-      hparams=model_hparams.create_hparams(FLAGS.hparams_overrides),
+      hparams=model_hparams.create_hparams(
+        FLAGS.load_pretrained, FLAGS.hparams_overrides),
       pipeline_config_path=FLAGS.pipeline_config_path,
       train_steps=FLAGS.num_train_steps,
       sample_1_of_n_eval_examples=FLAGS.sample_1_of_n_eval_examples,
