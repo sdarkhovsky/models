@@ -363,7 +363,7 @@ def create_model_fn(detection_model_fn, configs, hparams, use_tpu=False,
       losses_dict['Loss/total_loss'] = total_loss
 
       if 'graph_rewriter_config' in configs:
-        graph_rewriter_fn = graph_rewriter_builder.build(
+        graph_rewriter_fn = graph_rewriter_builder._build(
             configs['graph_rewriter_config'], is_training=is_training)
         graph_rewriter_fn()
 
