@@ -364,7 +364,7 @@ def create_model_fn(detection_model_fn, configs, hparams, use_tpu=False,
 
       if mode == tf.estimator.ModeKeys.TRAIN:
         if 'graph_rewriter_config' in configs:
-          graph_rewriter_fn = graph_rewriter_builder._build(
+          graph_rewriter_fn = graph_rewriter_builder.build(
               configs['graph_rewriter_config'], is_training=is_training)
           graph_rewriter_fn()
 

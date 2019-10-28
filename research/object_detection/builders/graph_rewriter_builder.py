@@ -15,7 +15,6 @@
 """Functions for quantized training and evaluation."""
 
 import tensorflow as tf
-from object_detection.quantize import quantize_graph
 
 def build(graph_rewriter_config, is_training):
   """Returns a function that modifies default graph based on options.
@@ -42,35 +41,4 @@ def build(graph_rewriter_config, is_training):
       )
 
     tf.contrib.layers.summarize_collection('quant_vars')
-  return graph_rewrite_fn
-
-
-def _build(graph_rewriter_config, is_training):
-  """Returns a function that modifies default graph based on options.
-
-  This alterantive build function uses a custom `experimental_create_*_graph`
-  to debug exactly where `SecondStageFeatureExtractor_1` is being defined.
-
-  Args:
-    graph_rewrite_config: graph_rewriter_pb2.GraphRewriter proto
-    is_training: whether in training or eval mode
-  """
-  def graph_rewrite_fn():
-    """Function to quantize weights and activation of default graph."""
-    if (graph_rewriter_config.quantization.weight_bits != 8 or
-        graph_rewriter_config.quantization.activation_bits != 8):
-      raise ValueError("Only 8bit quantization is supported")
-
-    # Quantize the graph by inseting quantize ops for weights and activations
-    if is_training:
-      quantize_graph.experimental_create_training_graph(
-        input_graph=tf.get_default_graph(),
-        quant_delay=graph_rewriter_config.quantization.delay
-      )
-    else:
-      quantize_graph.experimental_create_eval_graph(
-        input_graph=tf.get_default_graph()
-      )
-
-    tf.contrib.layers.summarize_collection("quant_vars")
   return graph_rewrite_fn
