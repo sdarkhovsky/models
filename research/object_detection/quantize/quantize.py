@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.compiler.tensorrt import trt_convert as trt
 
-from PIL import Image
+import cv2
 
 from google.protobuf import text_format
 from object_detection import exporter
