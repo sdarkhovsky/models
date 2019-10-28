@@ -241,7 +241,11 @@ def quantize_model(frozen_graph_def,
 
 
 def _read_image(image_path, image_shape):
-  image = Image.open(image_path).convert("RGB")
-  if image_shape is not None:
-    image = image.resize(image_shape[::-1])
-  return np.array(image)
+  """Load single or three channel image image in YUV color space"""
+  yuv = cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2YUV)
+  ychan = yuv[:,:,0]
+  # Single channel
+  if image_shape[-1] == 1:
+    return np.expand_dims(ychan, -1)
+  elif image_shape[-1] == 3:
+    return cv2.cvtColor(ychan, cv2.COLOR_GRAY2RGB)
