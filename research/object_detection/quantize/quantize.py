@@ -89,7 +89,7 @@ def remove_op(graph_def, op_name):
     remove_node(graph_def, match)
 
 
-def force_nms_cpu(frozen_graph):
+def f_force_nms_cpu(frozen_graph):
   """Force Non-max-NonMaxSuppression onto CPU"""
   for node in frozen_graph.node:
     if 'NonMaxSuppression' in node.name:
@@ -97,11 +97,11 @@ def force_nms_cpu(frozen_graph):
   return frozen_graph
 
 
-def replace_relu6(frozen_graph):
+def f_replace_relu6(frozen_graph):
   return convert_relu6(frozen_graph)
 
 
-def remove_assert(frozen_graph):
+def f_remove_assert(frozen_graph):
   remove_op(frozen_graph, 'Assert')
   return frozen_graph
 
@@ -156,11 +156,11 @@ def quantize_model(frozen_graph_def,
   """
   # Apply optional graph modifications
   if force_nms_cpu:
-      frozen_graph_def = force_nms_cpu(frozen_graph_def)
+      frozen_graph_def = f_force_nms_cpu(frozen_graph_def)
   if replace_relu6:
-      frozen_graph_def = replace_relu6(frozen_graph_def)
+      frozen_graph_def = f_replace_relu6(frozen_graph_def)
   if remove_assert:
-      frozen_graph_def = remove_assert(frozen_graph_def)
+      frozen_graph_def = f_remove_assert(frozen_graph_def)
 
   # Object detection ouput names
   output_names = [
