@@ -238,3 +238,10 @@ def quantize_model(frozen_graph_def,
       f.write(frozen_graph_def.SerializeToString())
 
   return frozen_graph_def
+
+
+def _read_image(image_path, image_shape):
+  image = Image.open(image_path).convert("RGB")
+  if image_shape is not None:
+    image = image.resize(image_shape[::-1])
+  return np.array(image)
