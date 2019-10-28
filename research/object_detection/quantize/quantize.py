@@ -216,7 +216,7 @@ def quantize_model(frozen_graph_def,
     def feed_dict_fn():
       batch_images = []
       for path in image_paths[feed_dict_fn.index:feed_dict_fn.index+calib_batch_size]:
-        image = _read_image(image_path, calib_image_shape)
+        image = _read_image(path, calib_image_shape)
         batch_images.append(image)
       feed_dict_fn.index += calib_batch_size
       return {"image_tensor:0": np.array(batch_images)}
