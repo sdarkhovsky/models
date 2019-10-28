@@ -156,11 +156,11 @@ def quantize_model(frozen_graph_def,
   """
   # Apply optional graph modifications
   if force_nms_cpu:
-      frozen_graph_def = f_force_nms_cpu(frozen_graph_def)
+      frozen_graph_def = force_nms_cpu(frozen_graph_def)
   if replace_relu6:
-      frozen_graph_def = f_replace_relu6(frozen_graph_def)
+      frozen_graph_def = replace_relu6(frozen_graph_def)
   if remove_assert:
-      frozen_graph_def = f_remove_assert(frozen_graph_def)
+      frozen_graph_def = remove_assert(frozen_graph_def)
 
   # Object detection ouput names
   output_names = [
