@@ -30,7 +30,7 @@ def make_relu6(output_name, input_name, const6_name="const6"):
     tf_6 = tf.constant(dtype=tf.float32, value=6.0, name=const6_name)
     with tf.name_scope(output_name):
       tf_y1 = tf.nn.relu(tf_x, name="relu1")
-      tf_y2 = tf.nn.relu(tf.substract(tf_x, tf_6, name="sub1"), name="relu2")
+      tf_y2 = tf.nn.relu(tf.subtract(tf_x, tf_6, name="sub1"), name="relu2")
 
   graph_def = graph.as_graph_def()
   graph_def.node[-1].name = output_name
