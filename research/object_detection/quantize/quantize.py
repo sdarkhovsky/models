@@ -220,6 +220,7 @@ def quantize_model(frozen_graph_def,
         batch_images.append(image)
       feed_dict_fn.index += calib_batch_size
       return {"image_tensor:0": np.array(batch_images)}
+    feed_dict_fn.index = 0
 
     print("Calibrating INT8...")
     start_time = time.time()
