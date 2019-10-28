@@ -8,6 +8,37 @@ from object_detection.protos import pipeline_pb2
 slim = tf.contrib.slim
 flags = tf.app.flags
 
+flags.DEFINE_string('input_type', 'image_tensor', 'Type of input node. Can be '
+                    'one of [`image_tensor`, `encoded_image_string_tensor`, '
+                    '`tf_example`]')
+flags.DEFINE_string('input_shape', None,
+                    'If input_type is `image_tensor`, this can explicitly set '
+                    'the shape of this input tensor to a fixed size. The '
+                    'dimensions are to be provided as a comma-separated list '
+                    'of integers. A value of -1 can be used for unknown '
+                    'dimensions. If not specified, for an `image_tensor, the '
+                    'default shape will be partially specified as '
+                    '`[None, None, None, 3]`.')
+flags.DEFINE_string('pipeline_config_path', None,
+                    'Path to a pipeline_pb2.TrainEvalPipelineConfig config '
+                    'file.')
+flags.DEFINE_string('trained_checkpoint_prefix', None,
+                    'Path to trained checkpoint, typically of the form '
+                    'path/to/model.ckpt')
+flags.DEFINE_string('output_directory', None, 'Path to write outputs.')
+flags.DEFINE_string('config_override', '',
+                    'pipeline_pb2.TrainEvalPipelineConfig '
+                    'text proto to override pipeline_config_path.')
+flags.DEFINE_boolean('write_inference_graph', False,
+                     'If true, writes inference graph to disk.')
+flags.DEFINE_string("calib_images_dir", None, "Path to calibration images")
+flags.DEFINE_integer("num_calib_images", 8, "Number of calibration images to use")
+flags.DEFINE_integer("calib_batch_size", 1, "Batch size to use in calibartion")
+tf.app.flags.mark_flag_as_required('pipeline_config_path')
+tf.app.flags.mark_flag_as_required('trained_checkpoint_prefix')
+tf.app.flags.mark_flag_as_required('output_directory')
+FLAGS = flags.FLAGS
+
 
 def main(_):
   pipeline_config = pipeline_pb2.TrainEvalPipelineConfig()
@@ -46,8 +77,8 @@ def main(_):
     frozen_graph_def,
     precision_mode="INT8",
     calib_images_dir=FLAGS.calib_images_dir,
-    num_calib_images=8,
-    calib_batch_size=1,
+    num_calib_images=FLAGS.num_calib_images,
+    calib_batch_size=FLAGS.calib_batch_size,
     output_path=os.path.join(
       FLAGS.output_directory,"quantized_inference_graph.pb"
     )
