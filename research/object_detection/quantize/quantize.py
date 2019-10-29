@@ -251,7 +251,7 @@ def _load_model_from_graph_def(graph_def):
 
   graph = tf.Graph()
   with graph.as_default():
-    tf.import_graph_def(graph_def)
+    tf.import_graph_def(graph_def, name="")
   sess = tf.Session(graph=graph, config=tf_config)
   return graph, sess
 
