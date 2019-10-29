@@ -176,10 +176,12 @@ def benchmark_model(frozen_graph_def, pipeline_config_path):
 
   # Create eval tf.data.Dataset
   # Note: this assumes we're using the first eval input configuration
-  eval_dataset = inputs.create_eval_input_fn(
+  eval_dataset = inputs.eval_input(
     eval_config=eval_config,
     eval_input_config=eval_input_configs[0],
-    model_config=model_config)
+    model_config=model_config,
+    model=None,
+    params=None)
 
   # Get graph and sess from graph def
   graph, sess = _load_model_from_graph_def(frozen_graph_def)
