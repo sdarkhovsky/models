@@ -253,6 +253,7 @@ def _load_model_from_graph_def(graph_def):
   with graph.as_default():
     tf.import_graph_def(graph_def)
   sess = tf.Session(graph=graph, config=tf_config)
+  return graph, sess
 
 
 def _detect(image, sess, tensor_dict):
