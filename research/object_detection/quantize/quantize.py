@@ -226,8 +226,8 @@ def benchmark_model(frozen_graph_def, pipeline_config_path):
   # Get COCO formatted groundtruth and detections
   groundtruth_dict = coco_tools.ExportGroundTruthToCOCO(
     image_ids=image_ids,
-    groundtruth_boxes=groundtruth_boxes,
-    groundtruth_classes=groundtruth_classes,
+    groundtruth_boxes=gt_boxes,
+    groundtruth_classes=gt_classes,
     categories=categories,
     output_path=None)
   detections_list = coco_tools.ExportDetectionsToCOCO(
