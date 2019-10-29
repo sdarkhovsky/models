@@ -182,7 +182,7 @@ def benchmark_model(frozen_graph_def, pipeline_config_path):
     model_config=model_config)
 
   # Get graph and sess from graph def
-  graph, sess = _load_model_from_graph_def(graph_def)
+  graph, sess = _load_model_from_graph_def(frozen_graph_def)
 
   # Input/output tensors
   tf_image_tensor = graph.get_tensor_by_name("image_tensor:0")
