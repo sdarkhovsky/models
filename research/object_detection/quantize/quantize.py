@@ -240,7 +240,7 @@ def benchmark_model(frozen_graph_def, pipeline_config_path):
   groundtruth = coco_tools.COCOWrapper(groundtruth_dict)
   detections = groundtruth.LoadAnnotations(detections_list, custom_data=True)
   evaluator = coco_tools.COCOEvalWrapper(
-    groundtruth, detections, agnostic_mode=True)
+    groundtruth, detections, agnostic_mode=False)
   metrics = evaluator.ComputeMetrics()
 
 
