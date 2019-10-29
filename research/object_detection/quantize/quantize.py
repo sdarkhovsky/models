@@ -9,9 +9,14 @@ import tensorflow as tf
 from tensorflow.python.compiler.tensorrt import trt_convert as trt
 
 from google.protobuf import text_format
+
+from object_detection import inputs
 from object_detection import exporter
+from object_detection import eval_util
+from object_detection.utils import config_util
 from object_detection.protos import pipeline_pb2
 from object_detection.quantize import quantize_utils
+from object_detection.metrics import coco_evaluation
 
 
 def quantize_model(frozen_graph_def,
@@ -148,5 +153,129 @@ def quantize_model(frozen_graph_def,
   return frozen_graph_def
 
 
-def benchmark_model():
-    pass
+def benchmark_model(
+  frozen_graph_def,
+  pipeline_config_path,
+):
+  """Computes COCO evaluation and performance metrics on frozen graph.
+
+  Args
+  ----
+      frozen_graph_def: A GraphDef representing the object detection model
+      pipeline_config_path: path to the pipeline config file
+      output_path: Optional string representing the output path to store
+          evaluation and performance stats.
+
+  Returns:
+  --------
+      statistics: a named dictionary of evaluation and performance metrics
+      computed for the provided model.
+  """
+  configs = config_util.get_configs_from_pipeline_file(
+    pipeline_config_path, config_override=None)
+  model_config = configs["model"]
+  eval_config = configs["eval_config"]
+  eval_input_configs = configs["eval_input_configs"]
+
+  # Create eval tf.data.Dataset
+  # Note: this assumes we're using the first eval input configuration
+  eval_dataset = inputs.create_eval_input_fn(
+    eval_config=eval_config,
+    eval_input_config=eval_input_configs[0],
+    model_config=model_config)
+
+  # Get graph and sess from graph def
+  graph, sess = _load_model_from_graph_def(graph_def)
+
+  # Input/output tensors
+  tf_image_tensor = graph.get_tensor_by_name("image_tensor:0")
+  tf_boxes = graph.get_tensor_by_name("detection_boxes:0")
+  tf_scores = graph.get_tensor_by_name("detection_scores:0")
+  tf_classes = graph.get_tensor_by_name("detection_classes:0")
+  tf_num_detections = graph.get_tensor_by_name("num_detections:0")
+  tf_masks = graph.get_tensor_by_name("detection_masks:0")
+  detection_tensor_dict = {
+    "boxes": tf_boxes,
+    "image": tf_image_tensor,
+    "scores": tf_scores,
+    "classes": tf_classes,
+    "num_detections": tf_num_detections,
+    "masks": tf_masks
+  }
+
+  # Run inference on eval set
+  # OPTIMIZE: currently we're doing batch_size=1 which slows things down
+  image_ids = []
+  gt_boxes = []
+  gt_classes = []
+  categories = []
+  detection_boxes = []
+  detection_scores = []
+  detection_classes = []
+  for features, labels in eval_dataset:
+      image_ids.append(features[inputs.HASH_KEY])
+      gt_boxes.append(np.squeeze(labels["groundtruth_boxes"].numpy()))
+      gt_classes.append(np.squeeze(labels["groundtruth_classes"].numpy()))
+      categories.append({"id": 1, "name": "barcode"})
+      # Run inference
+      boxes, masks, scores, classes, num_detections = detect(
+        image=features["original_image"].numpy(),
+        sess=sess,
+        tensor_dict=detection_tensor_dict)
+      detection_boxes.append(boxes)
+      detection_scores.append(scores)
+      detection_classes.append(classes)
+
+  # Get COCO formatted groundtruth and detections
+  groundtruth_dict = coco_tools.ExportGroundTruthToCOCO(
+    image_ids=image_ids,
+    groundtruth_boxes=groundtruth_boxes,
+    groundtruth_classes=groundtruth_classes,
+    categories=categories,
+    output_path=None)
+  detections_list = coco_tools.ExportDetectionsToCOCO(
+    image_ids=image_ids,
+    detection_boxes=detection_boxes,
+    detection_scores=detection_scores,
+    detection_classes=detection_classes,
+    categories=categories,
+    output_path=None)
+  groundtruth = coco_tools.COCOWrapper(groundtruth_dict)
+  detections = groundtruth.LoadAnnotations(detections_list, custom_data=True)
+  evaluator = coco_tools.COCOEvalWrapper(
+    groundtruth, detections, agnostic_mode=False)
+  metrics = evaluator.ComputeMetrics()
+
+
+def _load_model_from_graph_def(graph_def, tf_config):
+  tf_config = tf.ConfigProto()
+  tf_config.gpu_options.allow_growth = True
+  tf_config.gpu_options.per_process_gpu_memory_fraction = 0.6
+
+  graph = tf.Graph()
+  with graph.as_default():
+    tf.import_graph_def(graph_def)
+  sess = tf.Session(graph=graph, config=tf_config)
+
+
+def _detect(image, sess, tensor_dict):
+  (boxes, masks, scores, classes, num_detections) = sess.run(
+    [
+      tensor_dict["boxes"],
+      tensor_dict["masks"],
+      tensor_dict["scores"],
+      tensor_dict["classes"],
+      tensor_dict["num_detections"]
+    ],
+    feed_dict={tensor_dict["image"]: image}
+  )
+
+  # Keep only num detections
+  num_detections = int(np.squeeze(num_detections))
+  masks = np.squeeze(masks)[:num_detections]
+  masks = np.array(masks > 0.5, dtype=np.float32)
+  boxes = np.squeeze(boxes)[:num_detections]
+  scores = np.squeeze(scores)[:num_detections]
+  classes = np.squeeze(classes)[:num_detections]
+
+  return boxes, masks, scores, classes, num_detections
