@@ -212,7 +212,9 @@ def benchmark_model(frozen_graph_def, pipeline_config_path):
   detection_boxes = []
   detection_scores = []
   detection_classes = []
-  for features, labels in eval_dataset:
+  for i, features, labels in enumerate(val_dataset):
+      if i == 100:
+          break
       image_ids.append(features[inputs.HASH_KEY].numpy()[0])
       gt_boxes.append(np.squeeze(labels["groundtruth_boxes"].numpy()))
       gt_classes.append(np.squeeze(labels["groundtruth_classes"].numpy()))
