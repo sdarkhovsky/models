@@ -215,7 +215,7 @@ def benchmark_model(frozen_graph_def, pipeline_config_path):
       gt_classes.append(np.squeeze(labels["groundtruth_classes"].numpy()))
       categories.append({"id": 1, "name": "barcode"})
       # Run inference
-      boxes, masks, scores, classes, num_detections = detect(
+      boxes, masks, scores, classes, num_detections = _detect(
         image=features["original_image"].numpy(),
         sess=sess,
         tensor_dict=detection_tensor_dict)
