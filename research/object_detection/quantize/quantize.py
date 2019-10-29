@@ -6,6 +6,7 @@ import time
 
 import numpy as np
 import tensorflow as tf
+tf.enable_eager_execution()
 from tensorflow.python.compiler.tensorrt import trt_convert as trt
 
 from google.protobuf import text_format
