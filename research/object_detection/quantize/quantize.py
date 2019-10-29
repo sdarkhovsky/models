@@ -153,10 +153,7 @@ def quantize_model(frozen_graph_def,
   return frozen_graph_def
 
 
-def benchmark_model(
-  frozen_graph_def,
-  pipeline_config_path,
-):
+def benchmark_model(frozen_graph_def, pipeline_config_path):
   """Computes COCO evaluation and performance metrics on frozen graph.
 
   Args
