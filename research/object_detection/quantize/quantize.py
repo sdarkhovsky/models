@@ -18,7 +18,7 @@ from object_detection import eval_util
 from object_detection.utils import config_util
 from object_detection.protos import pipeline_pb2
 from object_detection.quantize import quantize_utils
-from object_detection.metrics import coco_evaluation
+from object_detection.metrics import coco_tools
 
 
 def quantize_model(frozen_graph_def,
