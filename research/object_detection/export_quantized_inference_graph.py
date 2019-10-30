@@ -34,6 +34,8 @@ flags.DEFINE_boolean('write_inference_graph', False,
 flags.DEFINE_string("calib_images_dir", None, "Path to calibration images")
 flags.DEFINE_integer("num_calib_images", 8, "Number of calibration images to use")
 flags.DEFINE_integer("calib_batch_size", 1, "Batch size to use in calibartion")
+flags.DEFINE_integer("num_eval_examples", 20000,
+                     "Number of evaluation examples to benchmark model")
 tf.app.flags.mark_flag_as_required('pipeline_config_path')
 tf.app.flags.mark_flag_as_required('trained_checkpoint_prefix')
 tf.app.flags.mark_flag_as_required('output_directory')
@@ -82,6 +84,13 @@ def main(_):
     output_path=os.path.join(
       FLAGS.output_directory,"quantized_inference_graph.pb"
     )
+  )
+
+  # Benchmark quantized model
+  quantize.benchmark_model(
+    frozen_graph_def,
+    pipeline_config_path=FLAGS.pipeline_config_path,
+    num_examples=FLAGS.num_eval_example,
   )
 
 if __name__ == '__main__':
