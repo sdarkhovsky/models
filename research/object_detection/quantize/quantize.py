@@ -6,8 +6,8 @@ import time
 
 import numpy as np
 import tensorflow as tf
-tf.enable_eager_execution()
 from tensorflow.python.compiler.tensorrt import trt_convert as trt
+from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 
 from google.protobuf import text_format
 
@@ -169,6 +169,7 @@ def benchmark_model(frozen_graph_def, pipeline_config_path):
       statistics: a named dictionary of evaluation and performance metrics
       computed for the provided model.
   """
+  switch_to(EAGER_MODE)
   configs = config_util.get_configs_from_pipeline_file(
     pipeline_config_path, config_override=None)
   model_config = configs["model"]
@@ -282,3 +283,9 @@ def _detect(image, sess, tensor_dict):
   classes = np.squeeze(classes)[:num_detections]
 
   return boxes, masks, scores, classes, num_detections
+
+
+def switch_to(mode):
+    ctx = context()._thread_local_data
+    ctx.mode = mode
+    ctx.is_eager = mode == EAGER_MODE
