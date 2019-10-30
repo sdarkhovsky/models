@@ -3,6 +3,7 @@
 import os
 import glob
 import time
+from tqdm import tqdm
 
 import numpy as np
 import tensorflow as tf
@@ -155,15 +156,14 @@ def quantize_model(frozen_graph_def,
   return frozen_graph_def
 
 
-def benchmark_model(frozen_graph_def, pipeline_config_path):
+def benchmark_model(frozen_graph_def, pipeline_config_path, num_examples):
   """Computes COCO evaluation and performance metrics on frozen graph.
 
   Args
   ----
       frozen_graph_def: A GraphDef representing the object detection model
       pipeline_config_path: path to the pipeline config file
-      output_path: Optional string representing the output path to store
-          evaluation and performance stats.
+      num_examples: int, number of eval examples to run through
 
   Returns:
   --------
@@ -214,9 +214,12 @@ def benchmark_model(frozen_graph_def, pipeline_config_path):
   detection_boxes = []
   detection_scores = []
   detection_classes = []
-  for i, features, labels in enumerate(val_dataset):
-      if i == 100:
+  pbar = tqdm(total=num_examples)
+  for i, features, labels in enumerate(eval_dataset):
+      if i == num_examples:
           break
+      else:
+          pbar.update(1)
       image_ids.append(features[inputs.HASH_KEY].numpy()[0])
       gt_boxes.append(np.squeeze(labels["groundtruth_boxes"].numpy()))
       gt_classes.append(np.squeeze(labels["groundtruth_classes"].numpy()))
