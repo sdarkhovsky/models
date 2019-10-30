@@ -215,7 +215,7 @@ def benchmark_model(frozen_graph_def, pipeline_config_path, num_examples):
   detection_scores = []
   detection_classes = []
   pbar = tqdm(total=num_examples)
-  for i, features, labels in enumerate(eval_dataset):
+  for i, (features, labels) in enumerate(eval_dataset):
       if i == num_examples:
           break
       else:
