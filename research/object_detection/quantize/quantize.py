@@ -81,6 +81,7 @@ def quantize_model(frozen_graph_def,
     "detection_boxes",
     "detection_classes",
     "detection_scores",
+    "detection_masks",
     "num_detections"
   ]
 
