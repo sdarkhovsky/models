@@ -88,7 +88,7 @@ class COCOWrapper(coco.COCO):
     self.dataset = dataset
     self.createIndex()
 
-  def LoadAnnotations(self, annotations):
+  def LoadAnnotations(self, annotations, custom_data=False):
     """Load annotations dictionary into COCO datastructure.
 
     See http://mscoco.org/dataset/#format for a description of the annotations
@@ -100,6 +100,7 @@ class COCOWrapper(coco.COCO):
         detection is encoded as a dict with required keys ['image_id',
         'category_id', 'score'] and one of ['bbox', 'segmentation'] based on
         `detection_type`.
+      custom_data: boolean indicating whether data is custom.
 
     Returns:
       a coco.COCO datastructure holding object detection annotations results
@@ -118,9 +119,10 @@ class COCOWrapper(coco.COCO):
     if not isinstance(annotations, list):
       raise ValueError('annotations is not a list of objects')
     annotation_img_ids = [ann['image_id'] for ann in annotations]
-    if (set(annotation_img_ids) != (set(annotation_img_ids)
-                                    & set(self.getImgIds()))):
-      raise ValueError('Results do not correspond to current coco set')
+    if not custom_data:
+      if (set(annotation_img_ids) != (set(annotation_img_ids)
+                                      & set(self.getImgIds()))):
+        raise ValueError('Results do not correspond to current coco set')
     results.dataset['categories'] = copy.deepcopy(self.dataset['categories'])
     if self._detection_type == 'bbox':
       for idx, ann in enumerate(annotations):

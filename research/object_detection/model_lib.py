@@ -362,10 +362,11 @@ def create_model_fn(detection_model_fn, configs, hparams, use_tpu=False,
       total_loss = tf.add_n(losses, name='total_loss')
       losses_dict['Loss/total_loss'] = total_loss
 
-      if 'graph_rewriter_config' in configs:
-        graph_rewriter_fn = graph_rewriter_builder.build(
-            configs['graph_rewriter_config'], is_training=is_training)
-        graph_rewriter_fn()
+      if mode == tf.estimator.ModeKeys.TRAIN:
+        if 'graph_rewriter_config' in configs:
+          graph_rewriter_fn = graph_rewriter_builder.build(
+              configs['graph_rewriter_config'], is_training=is_training)
+          graph_rewriter_fn()
 
       # TODO(rathodv): Stop creating optimizer summary vars in EVAL mode once we
       # can write learning rate summaries on TPU without host calls.
