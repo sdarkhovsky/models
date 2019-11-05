@@ -66,32 +66,5 @@ def main(_):
     write_inference_graph=FLAGS.write_inference_graph
   )
 
-  # Load frozen graph def
-  frozen_graph_def_path = os.path.join(
-    FLAGS.output_directory, "frozen_inference_graph.pb"
-  )
-  frozen_graph_def = tf.GraphDef()
-  with open(frozen_graph_def_path, "rb") as f:
-    frozen_graph_def.ParseFromString(f.read())
-
-  # Quantize model
-  frozen_graph_def = quantize.quantize_model(
-    frozen_graph_def,
-    precision_mode="INT8",
-    calib_images_dir=FLAGS.calib_images_dir,
-    num_calib_images=FLAGS.num_calib_images,
-    calib_batch_size=FLAGS.calib_batch_size,
-    output_path=os.path.join(
-      FLAGS.output_directory,"quantized_inference_graph.pb"
-    )
-  )
-
-  # Benchmark quantized model
-  quantize.benchmark_model(
-    frozen_graph_def,
-    pipeline_config_path=FLAGS.pipeline_config_path,
-    num_examples=FLAGS.num_eval_example,
-  )
-
 if __name__ == '__main__':
   tf.app.run()
