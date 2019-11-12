@@ -467,17 +467,17 @@ def masked_inception_v2_base(inputs,
     raise ValueError('Unknown final endpoint %s' % final_endpoint)
 
 
-def maked_inception_v2(inputs,
-                       num_classes=1000,
-                       is_training=True,
-                       dropout_keep_prob=0.8,
-                       min_depth=16,
-                       depth_multiplier=1.0,
-                       prediction_fn=slim.softmax,
-                       spatial_squeeze=True,
-                       reuse=None,
-                       scope='MaskedInceptionV2',
-                       global_pool=False):
+def masked_inception_v2(inputs,
+                        num_classes=1000,
+                        is_training=True,
+                        dropout_keep_prob=0.8,
+                        min_depth=16,
+                        depth_multiplier=1.0,
+                        prediction_fn=slim.softmax,
+                        spatial_squeeze=True,
+                        reuse=None,
+                        scope='MaskedInceptionV2',
+                        global_pool=False):
   """Masked Inception v2 model for classification.
 
   Constructs an Inception v2 network for classification as described in
