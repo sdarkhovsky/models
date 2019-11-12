@@ -12,15 +12,15 @@ model_pruning = tf.contrib.model_pruning
 trunc_normal = lambda stddev: tf.truncated_normal_initializer(0.0, stddev)
 
 
-def inception_v2_base(inputs,
-                      final_endpoint='Mixed_5c',
-                      min_depth=16,
-                      depth_multiplier=1.0,
-                      use_separable_conv=True,
-                      data_format='NHWC',
-                      include_root_block=True,
-                      scope=None):
-  """Inception v2 (6a2).
+def masked_inception_v2_base(inputs,
+                             final_endpoint='Mixed_5c',
+                             min_depth=16,
+                             depth_multiplier=1.0,
+                             use_separable_conv=True,
+                             data_format='NHWC',
+                             include_root_block=True,
+                             scope=None):
+  """Masked Inception v2 (6a2).
 
   Constructs an Inception v2 network from inputs to the given final endpoint.
   This method can construct the network up to the layer inception(5b) as
@@ -467,23 +467,28 @@ def inception_v2_base(inputs,
     raise ValueError('Unknown final endpoint %s' % final_endpoint)
 
 
-def inception_v2(inputs,
-                 num_classes=1000,
-                 is_training=True,
-                 dropout_keep_prob=0.8,
-                 min_depth=16,
-                 depth_multiplier=1.0,
-                 prediction_fn=slim.softmax,
-                 spatial_squeeze=True,
-                 reuse=None,
-                 scope='InceptionV2',
-                 global_pool=False):
-  """Inception v2 model for classification.
+def maked_inception_v2(inputs,
+                       num_classes=1000,
+                       is_training=True,
+                       dropout_keep_prob=0.8,
+                       min_depth=16,
+                       depth_multiplier=1.0,
+                       prediction_fn=slim.softmax,
+                       spatial_squeeze=True,
+                       reuse=None,
+                       scope='MaskedInceptionV2',
+                       global_pool=False):
+  """Masked Inception v2 model for classification.
 
   Constructs an Inception v2 network for classification as described in
   http://arxiv.org/abs/1502.03167.
 
   The default image size used to train this network is 224x224.
+
+  However, in this implementation instead of using tf.layers.conv2d we use
+  the tf.contrib.model_pruning variant layers.masked_conv2d which includes
+  auxilary mask and threshold variables used in model sparsification. These
+  additional variables are to be removed after training is completed.
 
   Args:
     inputs: a tensor of shape [batch_size, height, width, channels].
@@ -528,7 +533,7 @@ def inception_v2(inputs,
   with tf.variable_scope(scope, 'InceptionV2', [inputs], reuse=reuse) as scope:
     with slim.arg_scope([slim.batch_norm, slim.dropout],
                         is_training=is_training):
-      net, end_points = inception_v2_base(
+      net, end_points = masked_inception_v2_base(
           inputs, scope=scope, min_depth=min_depth,
           depth_multiplier=depth_multiplier)
       with tf.variable_scope('Logits'):
@@ -588,4 +593,4 @@ def _reduced_kernel_size_for_small_input(input_tensor, kernel_size):
   return kernel_size_out
 
 
-inception_v2_arg_scope = inception_utils.masked_inception_arg_scope
+masked_inception_v2_arg_scope = inception_utils.masked_inception_arg_scope
