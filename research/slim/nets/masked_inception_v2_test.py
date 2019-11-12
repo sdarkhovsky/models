@@ -111,7 +111,10 @@ class MaskedInceptionV2Test(tf.test.TestCase):
       inception.masked_inception_v2_base(inputs)
     total_params, _ = slim.model_analyzer.analyze_vars(
         slim.get_model_variables())
-    self.assertAlmostEqual(10173112, total_params)
+    # NOTE: since we're adding mask and threshold variables equivalent to all
+    # convolutional kernels, we're roughly doubling the size of the original
+    # inception_v2 network.
+    self.assertAlmostEqual(20313852, total_params)
 
   def testBuildEndPointsWithDepthMultiplierLessThanOne(self):
     batch_size = 5
