@@ -118,7 +118,7 @@ def main(unused_argv):
         model_pruning_hook = train_hooks.ModelPruningHook(
             target_sparsity=FLAGS.sparsity,
             start_step=FLAGS.pruning_start_step,
-            ends_step=FLAGS.pruning_end_step
+            end_step=FLAGS.pruning_end_step
         )
         hooks = [model_pruning_hook]
     else:
