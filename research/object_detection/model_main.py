@@ -24,6 +24,7 @@ import tensorflow as tf
 
 from object_detection import model_hparams
 from object_detection import model_lib
+from object_detection.hooks import train_hooks
 
 flags.DEFINE_string(
     'model_dir', None, 'Path to output model directory '
@@ -61,6 +62,16 @@ flags.DEFINE_boolean(
 flags.DEFINE_boolean(
     "load_pretrained", True, "If loading pretrained model, otherwise"
     "initialize weights randomly"
+)
+flags.DEFINE_float(
+    "sparsity", None, "Desired sparsity to achieve during training. If sparsity"
+    "is None then model pruning will not take place"
+)
+flags.DEFINE_integer(
+    "pruning_start_step", None, "Step at which pruning will start"
+)
+flags.DEFINE_integer(
+    "pruning_end_step", None, "Step at which pruning will stop"
 )
 FLAGS = flags.FLAGS
 
@@ -103,6 +114,15 @@ def main(unused_argv):
       model_lib.continuous_eval(estimator, FLAGS.checkpoint_dir, input_fn,
                                 train_steps, name)
   else:
+    if FLAGS.sparsity:
+        model_pruning_hook = train_hooks.ModelPruningHook(
+            target_sparsity=FLAGS.sparsity,
+            start_step=FLAGS.pruning_start_step,
+            ends_step=FLAGS.pruning_end_step
+        )
+        hooks = [model_pruning_hook]
+    else:
+        hooks = None
     train_spec, eval_specs = model_lib.create_train_and_eval_specs(
         train_input_fn,
         eval_input_fns,
@@ -110,6 +130,7 @@ def main(unused_argv):
         predict_input_fn,
         train_steps,
         eval_on_train_data=False,
+        hooks=hooks,
         throttle_secs=FLAGS.throttle_secs)
 
     # Currently only a single Eval Spec is allowed.
