@@ -26,7 +26,7 @@ class ModelPruningHook(tf.train.SessionRunHook):
       end_step=end_step
     )
 
-  def being(self):
+  def begin(self):
     """Called once before using the session.
     When called, the default graph is the one that will be launched in the
     session.  The hook can modify the graph by adding new operations to it.
