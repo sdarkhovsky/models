@@ -336,7 +336,7 @@ class FasterRCNNMaskedInceptionV2FeatureExtractor(
         ['image size must at least be 33 in both height and width.'])
 
     with tf.control_dependencies([shape_assert]):
-      with tf.variable_scope('MaskedInceptionV2',
+      with tf.variable_scope('InceptionV2',
                              reuse=self._reuse_weights) as scope:
         with _batch_norm_arg_scope(
           [model_pruning.masked_conv2d, slim.separable_conv2d],
@@ -372,7 +372,7 @@ class FasterRCNNMaskedInceptionV2FeatureExtractor(
     data_format = 'NHWC'
     concat_dim = 3 if data_format == 'NHWC' else 1
 
-    with tf.variable_scope('MaskedInceptionV2', reuse=self._reuse_weights):
+    with tf.variable_scope('InceptionV2', reuse=self._reuse_weights):
       with slim.arg_scope(
           [model_pruning.masked_conv2d, slim.max_pool2d, slim.avg_pool2d],
           stride=1,

@@ -83,7 +83,7 @@ def masked_inception_v2_base(inputs,
     )
 
   concat_dim = 3 if data_format == 'NHWC' else 1
-  with tf.variable_scope(scope, 'MaskedInceptionV2', [inputs]):
+  with tf.variable_scope(scope, 'InceptionV2', [inputs]):
     with slim.arg_scope(
         [model_pruning.masked_conv2d, slim.max_pool2d, slim.avg_pool2d],
         stride=1,
@@ -476,7 +476,7 @@ def masked_inception_v2(inputs,
                         prediction_fn=slim.softmax,
                         spatial_squeeze=True,
                         reuse=None,
-                        scope='MaskedInceptionV2',
+                        scope='InceptionV2',
                         global_pool=False):
   """Masked Inception v2 model for classification.
 

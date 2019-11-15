@@ -23,7 +23,7 @@ class MaskedInceptionV2Test(tf.test.TestCase):
     inputs = tf.random_uniform((batch_size, height, width, 3))
     logits, end_points = inception.masked_inception_v2(inputs, num_classes)
     self.assertTrue(logits.op.name.startswith(
-        'MaskedInceptionV2/Logits/SpatialSqueeze'))
+        'InceptionV2/Logits/SpatialSqueeze'))
     self.assertListEqual(logits.get_shape().as_list(),
                          [batch_size, num_classes])
     self.assertTrue('Predictions' in end_points)
@@ -37,7 +37,7 @@ class MaskedInceptionV2Test(tf.test.TestCase):
 
     inputs = tf.random_uniform((batch_size, height, width, 3))
     net, end_points = inception.masked_inception_v2(inputs, num_classes)
-    self.assertTrue(net.op.name.startswith('MaskedInceptionV2/Logits/AvgPool'))
+    self.assertTrue(net.op.name.startswith('InceptionV2/Logits/AvgPool'))
     self.assertListEqual(net.get_shape().as_list(), [batch_size, 1, 1, 1024])
     self.assertFalse('Logits' in end_points)
     self.assertFalse('Predictions' in end_points)
@@ -48,7 +48,7 @@ class MaskedInceptionV2Test(tf.test.TestCase):
 
     inputs = tf.random_uniform((batch_size, height, width, 3))
     mixed_5c, end_points = inception.masked_inception_v2_base(inputs)
-    self.assertTrue(mixed_5c.op.name.startswith('MaskedInceptionV2/Mixed_5c'))
+    self.assertTrue(mixed_5c.op.name.startswith('InceptionV2/Mixed_5c'))
     self.assertListEqual(mixed_5c.get_shape().as_list(),
                          [batch_size, 7, 7, 1024])
     expected_endpoints = ['Mixed_3b', 'Mixed_3c', 'Mixed_4a', 'Mixed_4b',
@@ -71,7 +71,7 @@ class MaskedInceptionV2Test(tf.test.TestCase):
         out_tensor, end_points = inception.masked_inception_v2_base(
             inputs, final_endpoint=endpoint)
         self.assertTrue(out_tensor.op.name.startswith(
-            'MaskedInceptionV2/' + endpoint))
+            'InceptionV2/' + endpoint))
         self.assertItemsEqual(endpoints[:index+1], end_points.keys())
 
   def testBuildAndCheckAllEndPointsUptoMixed5c(self):
@@ -236,7 +236,7 @@ class MaskedInceptionV2Test(tf.test.TestCase):
 
     inputs = tf.random_uniform((batch_size, height, width, 3))
     logits, end_points = inception.masked_inception_v2(inputs, num_classes)
-    self.assertTrue(logits.op.name.startswith('MaskedInceptionV2/Logits'))
+    self.assertTrue(logits.op.name.startswith('InceptionV2/Logits'))
     self.assertListEqual(logits.get_shape().as_list(),
                          [batch_size, num_classes])
     pre_pool = end_points['Mixed_5c']
@@ -279,7 +279,7 @@ class MaskedInceptionV2Test(tf.test.TestCase):
     with self.test_session() as sess:
       inputs = tf.placeholder(tf.float32, shape=(batch_size, None, None, 3))
       logits, end_points = inception.masked_inception_v2(inputs, num_classes)
-      self.assertTrue(logits.op.name.startswith('MaskedInceptionV2/Logits'))
+      self.assertTrue(logits.op.name.startswith('InceptionV2/Logits'))
       self.assertListEqual(logits.get_shape().as_list(),
                            [batch_size, num_classes])
       pre_pool = end_points['Mixed_5c']
@@ -298,7 +298,7 @@ class MaskedInceptionV2Test(tf.test.TestCase):
       inputs = tf.placeholder(tf.float32, shape=(batch_size, None, None, 3))
       logits, end_points = inception.masked_inception_v2(inputs, num_classes,
                                                   global_pool=True)
-      self.assertTrue(logits.op.name.startswith('MaskedInceptionV2/Logits'))
+      self.assertTrue(logits.op.name.startswith('InceptionV2/Logits'))
       self.assertListEqual(logits.get_shape().as_list(),
                            [batch_size, num_classes])
       pre_pool = end_points['Mixed_5c']
