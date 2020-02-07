@@ -16,7 +16,6 @@
 
 import tensorflow as tf
 
-
 def build(graph_rewriter_config, is_training):
   """Returns a function that modifies default graph based on options.
 

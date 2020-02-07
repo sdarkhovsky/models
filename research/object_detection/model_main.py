@@ -24,6 +24,7 @@ import tensorflow as tf
 
 from object_detection import model_hparams
 from object_detection import model_lib
+from object_detection.hooks import train_hooks
 
 flags.DEFINE_string(
     'model_dir', None, 'Path to output model directory '
@@ -41,6 +42,11 @@ flags.DEFINE_integer('sample_1_of_n_eval_on_train_examples', 5, 'Will sample '
                      'one of every n train input examples for evaluation, '
                      'where n is provided. This is only used if '
                      '`eval_training_data` is True.')
+flags.DEFINE_integer(
+    "throttle_secs", 900, "Do not re-evaluate unless the last"
+    "evaluation was started at least this many seconds ago. "
+    "Of course, evaluation does not occur if no new "
+    "checkpoints are available, hence, this is the minimum")
 flags.DEFINE_string(
     'hparams_overrides', None, 'Hyperparameter overrides, '
     'represented as a string containing comma-separated '
@@ -53,6 +59,20 @@ flags.DEFINE_boolean(
     'run_once', False, 'If running in eval-only mode, whether to run just '
     'one round of eval vs running continuously (default).'
 )
+flags.DEFINE_boolean(
+    "load_pretrained", True, "If loading pretrained model, otherwise"
+    "initialize weights randomly"
+)
+flags.DEFINE_float(
+    "sparsity", None, "Desired sparsity to achieve during training. If sparsity"
+    "is None then model pruning will not take place"
+)
+flags.DEFINE_integer(
+    "pruning_start_step", None, "Step at which pruning will start"
+)
+flags.DEFINE_integer(
+    "pruning_end_step", None, "Step at which pruning will stop"
+)
 FLAGS = flags.FLAGS
 
 
@@ -63,7 +83,8 @@ def main(unused_argv):
 
   train_and_eval_dict = model_lib.create_estimator_and_inputs(
       run_config=config,
-      hparams=model_hparams.create_hparams(FLAGS.hparams_overrides),
+      hparams=model_hparams.create_hparams(
+        FLAGS.load_pretrained, FLAGS.hparams_overrides),
       pipeline_config_path=FLAGS.pipeline_config_path,
       train_steps=FLAGS.num_train_steps,
       sample_1_of_n_eval_examples=FLAGS.sample_1_of_n_eval_examples,
@@ -93,13 +114,24 @@ def main(unused_argv):
       model_lib.continuous_eval(estimator, FLAGS.checkpoint_dir, input_fn,
                                 train_steps, name)
   else:
+    if FLAGS.sparsity:
+        model_pruning_hook = train_hooks.ModelPruningHook(
+            target_sparsity=FLAGS.sparsity,
+            start_step=FLAGS.pruning_start_step,
+            end_step=FLAGS.pruning_end_step
+        )
+        hooks = [model_pruning_hook]
+    else:
+        hooks = None
     train_spec, eval_specs = model_lib.create_train_and_eval_specs(
         train_input_fn,
         eval_input_fns,
         eval_on_train_input_fn,
         predict_input_fn,
         train_steps,
-        eval_on_train_data=False)
+        eval_on_train_data=False,
+        hooks=hooks,
+        throttle_secs=FLAGS.throttle_secs)
 
     # Currently only a single Eval Spec is allowed.
     tf.estimator.train_and_evaluate(estimator, train_spec, eval_specs[0])

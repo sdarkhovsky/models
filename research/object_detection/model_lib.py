@@ -362,10 +362,11 @@ def create_model_fn(detection_model_fn, configs, hparams, use_tpu=False,
       total_loss = tf.add_n(losses, name='total_loss')
       losses_dict['Loss/total_loss'] = total_loss
 
-      if 'graph_rewriter_config' in configs:
-        graph_rewriter_fn = graph_rewriter_builder.build(
-            configs['graph_rewriter_config'], is_training=is_training)
-        graph_rewriter_fn()
+      if mode == tf.estimator.ModeKeys.TRAIN:
+        if 'graph_rewriter_config' in configs:
+          graph_rewriter_fn = graph_rewriter_builder.build(
+              configs['graph_rewriter_config'], is_training=is_training)
+          graph_rewriter_fn()
 
       # TODO(rathodv): Stop creating optimizer summary vars in EVAL mode once we
       # can write learning rate summaries on TPU without host calls.
@@ -704,6 +705,8 @@ def create_train_and_eval_specs(train_input_fn,
                                 train_steps,
                                 eval_on_train_data=False,
                                 final_exporter_name='Servo',
+                                throttle_secs=900,
+                                hooks=None,
                                 eval_spec_names=None):
   """Creates a `TrainSpec` and `EvalSpec`s.
 
@@ -718,6 +721,8 @@ def create_train_and_eval_specs(train_input_fn,
     eval_on_train_data: Whether to evaluate model on training data. Default is
       False.
     final_exporter_name: String name given to `FinalExporter`.
+    throttle_secs: Number of seconds to throttle training.
+    hooks: Iterable of tf.train.SessionRunHook objects to run on all workers.
     eval_spec_names: A list of string names for each `EvalSpec`.
 
   Returns:
@@ -726,7 +731,7 @@ def create_train_and_eval_specs(train_input_fn,
     rest EvalSpecs in the list are evaluation datas.
   """
   train_spec = tf.estimator.TrainSpec(
-      input_fn=train_input_fn, max_steps=train_steps)
+      input_fn=train_input_fn, max_steps=train_steps, hooks=hooks)
 
   if eval_spec_names is None:
     eval_spec_names = [str(i) for i in range(len(eval_input_fns))]
@@ -747,7 +752,8 @@ def create_train_and_eval_specs(train_input_fn,
             name=eval_spec_name,
             input_fn=eval_input_fn,
             steps=None,
-            exporters=exporter))
+            exporters=exporter,
+            throttle_secs=throttle_secs))
 
   if eval_on_train_data:
     eval_specs.append(

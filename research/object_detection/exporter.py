@@ -491,6 +491,52 @@ def export_inference_graph(input_type,
   config_util.save_pipeline_config(pipeline_config, output_directory)
 
 
+def export_quantized_inference_graph(input_type,
+                                     pipeline_config,
+                                     trained_checkpoint_prefix,
+                                     output_directory,
+                                     input_shape=None,
+                                     output_collection_name="inference_op",
+                                     additional_output_tensor_names=None,
+                                     write_inference_graph=False):
+  """Exports quantized inference graph.
+
+  This prevents the multiple graph_rewriter_builder.build calls which leads
+  to a graph mismatch error.
+
+  Args:
+    input_type: Type of input for the graph. Can be one of ['image_tensor',
+      'encoded_image_string_tensor', 'tf_example'].
+    pipeline_config: pipeline_pb2.TrainAndEvalPipelineConfig proto.
+    trained_checkpoint_prefix: Path to the trained checkpoint file.
+    output_directory: Path to write outputs.
+    input_shape: Sets a fixed shape for an `image_tensor` input. If not
+      specified, will default to [None, None, None, 3].
+    output_collection_name: Name of collection to add output tensors to.
+      If None, does not add output tensors to a collection.
+    additional_output_tensor_names: list of additional output
+      tensors to include in the frozen graph.
+    write_inference_graph: If true, writes inference graph to disk.
+  """
+  detection_model = model_builder.build(pipeline_config.model,
+                                        is_training=False)
+
+  graph_rewriter_fn = None
+  _export_inference_graph(
+      input_type,
+      detection_model,
+      pipeline_config.eval_config.use_moving_averages,
+      trained_checkpoint_prefix,
+      output_directory,
+      additional_output_tensor_names,
+      input_shape,
+      output_collection_name,
+      graph_hook_fn=graph_rewriter_fn,
+      write_inference_graph=write_inference_graph)
+  pipeline_config.eval_config.use_moving_averages = False
+  config_util.save_pipeline_config(pipeline_config, output_directory)
+
+
 def profile_inference_graph(graph):
   """Profiles the inference graph.
 

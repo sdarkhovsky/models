@@ -143,6 +143,7 @@ class TfExampleDecoder(data_decoder.DataDecoder):
                use_display_name=False,
                dct_method='',
                num_keypoints=0,
+               num_channels=3,
                num_additional_channels=0,
                load_multiclass_scores=False):
     """Constructor sets keys_to_features and items_to_handlers.
@@ -165,6 +166,7 @@ class TfExampleDecoder(data_decoder.DataDecoder):
         are ['INTEGER_FAST', 'INTEGER_ACCURATE']. The hint may be ignored, for
         example, the jpeg library does not have that specific option.
       num_keypoints: the number of keypoints per object.
+      num_channels: number of channels in original image.
       num_additional_channels: how many additional channels to use.
       load_multiclass_scores: Whether to load multiclass scores associated with
         boxes.
@@ -228,7 +230,7 @@ class TfExampleDecoder(data_decoder.DataDecoder):
       image = slim_example_decoder.Image(
           image_key='image/encoded',
           format_key='image/format',
-          channels=3,
+          channels=num_channels,
           dct_method=dct_method)
       additional_channel_image = slim_example_decoder.Image(
           image_key='image/additional_channels/encoded',
@@ -238,7 +240,9 @@ class TfExampleDecoder(data_decoder.DataDecoder):
           dct_method=dct_method)
     else:
       image = slim_example_decoder.Image(
-          image_key='image/encoded', format_key='image/format', channels=3)
+          image_key='image/encoded',
+          format_key='image/format',
+          channels=num_channels)
       additional_channel_image = slim_example_decoder.Image(
           image_key='image/additional_channels/encoded',
           format_key='image/format',
@@ -389,7 +393,8 @@ class TfExampleDecoder(data_decoder.DataDecoder):
     tensor_dict = dict(zip(keys, tensors))
     is_crowd = fields.InputDataFields.groundtruth_is_crowd
     tensor_dict[is_crowd] = tf.cast(tensor_dict[is_crowd], dtype=tf.bool)
-    tensor_dict[fields.InputDataFields.image].set_shape([None, None, 3])
+    # TODO(francisco): Set the shape to the correct number of channels
+    tensor_dict[fields.InputDataFields.image].set_shape([None, None, None])
     tensor_dict[fields.InputDataFields.original_image_spatial_shape] = tf.shape(
         tensor_dict[fields.InputDataFields.image])[:2]
 
