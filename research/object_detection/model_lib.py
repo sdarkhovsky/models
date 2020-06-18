@@ -686,7 +686,7 @@ def create_estimator_and_inputs(
 
     # If pruning, check that feature extractor can handle pruning
     if sparsity and model_config.HasField("faster_rcnn"):
-        feature_extractor = model.config.faster_rcnn.feature_extractor.type
+        feature_extractor = model_config.faster_rcnn.feature_extractor.type
         if not "masked" in feature_extractor:
             raise ValueError(
                 f"Feature extractor `{feature_extractor}` does not support pruning"
