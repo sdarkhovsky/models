@@ -685,10 +685,15 @@ def create_estimator_and_inputs(
         eval_on_train_input_config.num_epochs = 1
 
     # If pruning, check that feature extractor can handle pruning
-    if sparsity and not "masked" in model_config["feature_extractor"]:
-        raise ValueError(
-            f'Feature extractor `{model_config["feature_extractor"]}`'
-            "does not support pruning"
+    if sparsity and model_config.HasField("faster_rcnn"):
+        feature_extractor = model.config.faster_rcnn.feature_extractor.type
+        if not "masked" in feature_extractor:
+            raise ValueError(
+                f"Feature extractor `{feature_extractor}` does not support pruning"
+            )
+    if sparsity and not model_config.HasField("faster_rcnn"):
+        tf.logging.warning(
+            "Non Faster RCNN architecutres don't have pruning support yet"
         )
 
     # update train_steps from config but only when non-zero value is provided
